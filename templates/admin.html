@@ -5,7 +5,7 @@
   <h2>🛍 Items</h2>
   <details><summary class="btn" style="display:inline-block">+ Add / edit item</summary>
     <form method="post" action="{{ url_for('admin_item_save') }}" class="panel" style="margin:14px 0">
-      <input type="hidden" name="id" placeholder="ID (blank = new)" />
+      
       <label>ID (blank for new)</label><input name="id" />
       <label>Name</label><input name="name" required />
       <label>Description</label><textarea name="description" rows="2"></textarea>
