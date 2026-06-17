@@ -1,0 +1,153 @@
+/* FireMC Shop — dark Minecraft-inspired theme */
+:root{
+  --bg:#070b1a; --panel:#0f1530; --panel2:#151c3d; --line:#222a55;
+  --text:#e8ecff; --muted:#8a93c4; --accent:#7c5cff; --accent2:#4f7cff;
+  --gold:#ffce4d; --good:#3ddc97; --bad:#ff5a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--text);text-decoration:none}
+.container{max-width:1080px;margin:0 auto;padding:18px 20px}
+
+/* Background streaks */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:
+  linear-gradient(105deg,transparent 45%,rgba(124,92,255,.25) 50%,transparent 55%),
+  linear-gradient(95deg,transparent 60%,rgba(79,124,255,.18) 65%,transparent 70%);
+  background-size:200% 200%;animation:slide 18s linear infinite;z-index:0}
+@keyframes slide{0%{background-position:0 0}100%{background-position:200% 0}}
+.container,header,footer{position:relative;z-index:1}
+
+header.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#6a4bff,#a23dff);display:grid;place-items:center;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(124,92,255,.4)}
+.brand h1{font-size:18px;margin:0;letter-spacing:.5px}
+.brand small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+nav.links{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+nav.links a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;transition:.15s}
+nav.links a:hover,nav.links a.active{background:rgba(124,92,255,.18);color:#fff}
+.coin-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#ffd76b,#ff9e3d);color:#3a1d00;font-weight:700;font-size:13px}
+
+/* Hero */
+.hero{margin:22px 0 28px;padding:28px;border-radius:18px;background:
+  linear-gradient(135deg,rgba(124,92,255,.25),rgba(79,124,255,.15)),
+  url('/static/img/hero.jpg') center/cover;
+  border:1px solid var(--line);position:relative;overflow:hidden}
+.hero h2{margin:0 0 6px;font-size:28px}
+.hero p{margin:0;color:#c9cfff}
+.ip{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.45);padding:8px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;border:1px solid var(--line)}
+
+/* Categories */
+.cats{display:flex;gap:8px;overflow-x:auto;padding:6px 0 14px}
+.cats a{padding:8px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--muted);font-size:13px;white-space:nowrap}
+.cats a.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+
+/* Search */
+.search{margin:0 0 18px}
+.search input{width:100%;padding:12px 16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:#fff;font-size:14px}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:.15s}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.card .img{aspect-ratio:1/1;background:var(--panel2);display:grid;place-items:center;position:relative}
+.card .img img{max-width:70%;max-height:70%}
+.badge{position:absolute;top:10px;left:10px;background:var(--gold);color:#3a2200;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px}
+.card .body{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{margin:0;font-size:15px}
+.card p{margin:0;font-size:12px;color:var(--muted);line-height:1.4;flex:1}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.price{font-weight:800;color:var(--gold);display:flex;align-items:center;gap:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;font-size:13px;border:0;cursor:pointer;text-decoration:none;transition:.15s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn.bad{background:linear-gradient(135deg,#ff5a7a,#ff2e5e)}
+.btn.good{background:linear-gradient(135deg,#3ddc97,#1faa6a)}
+.btn.sm{padding:5px 10px;font-size:12px}
+
+/* Forms */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;max-width:440px;margin:30px auto}
+.panel h2{margin:0 0 16px}
+label{display:block;margin:10px 0 6px;font-size:13px;color:var(--muted)}
+input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:#fff;font-size:14px;font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--accent)}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:14px}
+.tabs button{flex:1;padding:8px;border-radius:8px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-weight:600;font-size:13px}
+.tabs button.active{background:var(--accent);color:#fff}
+
+/* Flash */
+.flash{margin:10px 0;padding:10px 14px;border-radius:10px;font-size:13px}
+.flash.error{background:rgba(255,90,122,.15);border:1px solid var(--bad);color:#ffb0c0}
+.flash.success{background:rgba(61,220,151,.15);border:1px solid var(--good);color:#a6f4cf}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.status{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+.status.pending{background:rgba(255,206,77,.18);color:#ffce4d}
+.status.confirmed{background:rgba(61,220,151,.18);color:var(--good)}
+.status.cancelled{background:rgba(255,90,122,.18);color:var(--bad)}
+
+/* Sections */
+section{margin:30px 0}
+section h2{font-size:20px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+
+/* Footer */
+footer{margin-top:50px;padding:24px 20px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+
+/* Responsive Adjustments & Mobile UI Layout Bugfixes */
+@media (max-width: 768px) {
+  /* 1. Fix Toolbar & Coin Bar Collision */
+  header.nav {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding-top: 16px;
+  }
+  .brand {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .brand h1 {
+    font-size: 16px;
+  }
+  nav.links {
+    justify-content: center;
+    width: 100%;
+    gap: 6px;
+  }
+  nav.links a {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .coin-pill {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  /* 2. Fix Hero Banner Squishing */
+  .hero {
+    padding: 22px;
+  }
+  .hero h2 {
+    font-size: 22px;
+  }
+
+  /* 3. Fix Grid Sizing Discrepancies */
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .card .img {
+    width: 100%;
+    height: 180px; 
+    aspect-ratio: auto; 
+    overflow: hidden;
+  }
+  .card .img img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain; 
+  }
+}
