@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>Buy {{ item['name'] }}</h2>
+  <p style="color:var(--muted);font-size:13px">{{ item['description'] }}</p>
+  <div class="row" style="margin:12px 0"><span class="price">🪙 {{ item['price'] }}</span><span style="color:var(--muted);font-size:12px">Your balance: 🪙 {{ user['coins'] }}</span></div>
+  <form method="post">
+    <label>Minecraft Username</label><input name="mc" required />
+    <label>Contact (Instagram / Discord / Telegram)</label><input name="contact" required />
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <a href="{{ url_for('index') }}" class="btn ghost" style="flex:1;text-align:center">Cancel</a>
+      <button class="btn" style="flex:1">Confirm purchase</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

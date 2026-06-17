@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>🎁 Earn Coins</h2>
+  <p style="color:var(--muted);font-size:13px">Complete tasks to earn coins. Wait for the timer, then claim.</p>
+  <div class="grid">
+    {% for l in links %}
+    <div class="card"><div class="body">
+      <h3>{{ l['title'] }}</h3>
+      <p>Wait {{ l['wait_seconds'] }}s · earn 🪙 {{ l['coins'] }}</p>
+      <div class="row">
+        <span class="price">🪙 {{ l['coins'] }}</span>
+        <button class="btn" data-id="{{ l['id'] }}" data-wait="{{ l['wait_seconds'] }}" onclick="start(this)">Start</button>
+      </div>
+    </div></div>
+    {% else %}<p style="color:var(--muted)">No earn tasks available.</p>{% endfor %}
+  </div>
+</section>
+<script>
+async function start(btn){
+  const id=btn.dataset.id;
+  const r=await fetch(`/earn/${id}/start`,{method:'POST'});
+  const d=await r.json();
+  if(d.error){alert(d.error);return}
+  window.open(d.url,'_blank');
+  let s=d.wait_seconds;
+  btn.disabled=true;
+  const t=setInterval(()=>{btn.textContent=`Wait ${s}s`;if(--s<0){clearInterval(t);btn.disabled=false;btn.textContent='Claim';btn.onclick=async()=>{
+    const r2=await fetch(`/earn/complete/${d.click_id}`,{method:'POST'});const d2=await r2.json();
+    if(d2.error){alert(d2.error)}else{alert(`+${d2.coins} coins!`);location.reload()}
+  }}},1000);
+}
+</script>
+{% endblock %}

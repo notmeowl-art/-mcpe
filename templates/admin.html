@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section>
+  <h2>🛍 Items</h2>
+  <details><summary class="btn" style="display:inline-block">+ Add / edit item</summary>
+    <form method="post" action="{{ url_for('admin_item_save') }}" class="panel" style="margin:14px 0">
+      <input type="hidden" name="id" placeholder="ID (blank = new)" />
+      <label>ID (blank for new)</label><input name="id" />
+      <label>Name</label><input name="name" required />
+      <label>Description</label><textarea name="description" rows="2"></textarea>
+      <label>Category</label><input name="category" value="kits" />
+      <label>Price</label><input type="number" name="price" value="10" />
+      <label>Image URL</label><input name="image_url" placeholder="/static/img/item-kit.png" />
+      <label>Badge (optional)</label><input name="badge" />
+      <button class="btn" style="margin-top:12px">Save</button>
+    </form>
+  </details>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Cat</th><th>Price</th><th>Badge</th><th></th></tr></thead>
+    <tbody>
+      {% for i in items %}<tr>
+        <td>{{ i['id'] }}</td><td>{{ i['name'] }}</td><td>{{ i['category'] }}</td>
+        <td>🪙 {{ i['price'] }}</td><td>{{ i['badge'] or '' }}</td>
+        <td><form method="post" action="{{ url_for('admin_item_delete', item_id=i['id']) }}" onsubmit="return confirm('Delete?')">
+          <button class="btn bad sm">Delete</button></form></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>👥 Users</h2>
+  <table>
+    <thead><tr><th>Email</th><th>Coins</th><th>Role</th><th>Set role</th><th>Give coins</th></tr></thead>
+    <tbody>
+      {% for u in users %}<tr>
+        <td>{{ u['email'] }}</td>
+        <td>🪙 {{ u['coins'] }}</td>
+        <td><span class="status confirmed">{{ u['role'] }}</span></td>
+        <td><form method="post" action="{{ url_for('admin_user_role', user_id=u['id']) }}" style="display:flex;gap:4px">
+          <select name="role">
+            <option value="user" {% if u['role']=='user' %}selected{% endif %}>user</option>
+            <option value="moderator" {% if u['role']=='moderator' %}selected{% endif %}>moderator</option>
+            <option value="admin" {% if u['role']=='admin' %}selected{% endif %}>admin</option>
+          </select>
+          <button class="btn sm">Set</button>
+        </form></td>
+        <td><form method="post" action="{{ url_for('admin_user_coins', user_id=u['id']) }}" style="display:flex;gap:4px">
+          <input type="number" name="amount" placeholder="±N" style="width:80px" />
+          <button class="btn sm">Apply</button>
+        </form></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>🔗 Earn Links</h2>
+  <details><summary class="btn" style="display:inline-block">+ Add / edit link</summary>
+    <form method="post" action="{{ url_for('admin_link_save') }}" class="panel" style="margin:14px 0">
+      <label>ID (blank for new)</label><input name="id" />
+      <label>Title</label><input name="title" required />
+      <label>URL</label><input name="url" required />
+      <label>Coins</label><input type="number" name="coins" value="5" />
+      <label>Wait seconds</label><input type="number" name="wait_seconds" value="30" />
+      <label><input type="checkbox" name="active" checked style="width:auto"> Active</label>
+      <button class="btn" style="margin-top:12px">Save</button>
+    </form>
+  </details>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Coins</th><th>Wait</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      {% for l in links %}<tr>
+        <td>{{ l['id'] }}</td><td>{{ l['title'] }}</td>
+        <td>🪙 {{ l['coins'] }}</td><td>{{ l['wait_seconds'] }}s</td>
+        <td>{{ '✅' if l['active'] else '❌' }}</td>
+        <td><form method="post" action="{{ url_for('admin_link_delete', link_id=l['id']) }}" onsubmit="return confirm('Delete?')">
+          <button class="btn bad sm">Delete</button></form></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

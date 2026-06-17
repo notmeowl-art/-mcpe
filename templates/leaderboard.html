@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>🏆 Leaderboard</h2>
+  <table>
+    <thead><tr><th>#</th><th>Player</th><th>Coins</th></tr></thead>
+    <tbody>
+      {% for r in rows %}<tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ r['email'].split('@')[0] if r['email'] else '—' }}</td>
+        <td class="price">🪙 {{ r['coins'] }}</td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

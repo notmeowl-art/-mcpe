@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}FireMC Shop — {{ server_ip }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <header class="nav">
+      <a href="{{ url_for('index') }}" class="brand">
+
+        <div>
+      <div class="ip">⛏ {{ server_ip }}</div>
+        </div>
+      </a>
+      <nav class="links">
+        <a href="{{ url_for('index') }}" class="{% if request.endpoint=='index' %}active{% endif %}">Shop</a>
+        {% if user %}
+          <a href="{{ url_for('orders') }}" class="{% if request.endpoint=='orders' %}active{% endif %}">Orders</a>
+          <a href="{{ url_for('earn') }}" class="{% if request.endpoint=='earn' %}active{% endif %}">Earn</a>
+        {% endif %}
+        <a href="{{ url_for('leaderboard') }}" class="{% if request.endpoint=='leaderboard' %}active{% endif %}">Leaderboard</a>
+        {% if is_admin %}<a href="{{ url_for('admin') }}" class="{% if request.endpoint=='admin' %}active{% endif %}">Admin</a>{% endif %}
+        {% if user %}
+          <span class="coin-pill">🪙 {{ user['coins'] }}</span>
+          <a href="{{ url_for('logout') }}" class="btn ghost sm">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth') }}" class="btn sm">Sign in</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer>
+    FireMC Shop · {{ server_ip }} · Built By NoT MeowL
+  </footer>
+</body>
+</html>

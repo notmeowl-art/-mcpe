@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>Welcome back</h2>
+  <div class="tabs">
+    <button class="active" type="button" onclick="show('login')">Sign in</button>
+    <button type="button" onclick="show('signup')">Sign up</button>
+  </div>
+  <form method="post" id="form-login">
+    <input type="hidden" name="mode" value="login" />
+    <label>Email</label><input type="email" name="email" required />
+    <label>Password</label><input type="password" name="password" required minlength="6" />
+    <button class="btn" style="width:100%;margin-top:14px">Sign in</button>
+  </form>
+  <form method="post" id="form-signup" style="display:none">
+    <input type="hidden" name="mode" value="signup" />
+    <label>Email</label><input type="email" name="email" required />
+    <label>Password</label><input type="password" name="password" required minlength="6" />
+    <button class="btn" style="width:100%;margin-top:14px">Create account</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px">First user becomes admin automatically.</p>
+  </form>
+</div>
+<script>
+function show(m){
+  document.getElementById('form-login').style.display = m==='login'?'block':'none';
+  document.getElementById('form-signup').style.display = m==='signup'?'block':'none';
+  document.querySelectorAll('.tabs button').forEach((b,i)=>b.classList.toggle('active', (i===0)===(m==='login')));
+}
+</script>
+{% endblock %}

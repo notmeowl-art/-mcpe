@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero">
+  <h2>Get Free Gear In Firemc 🪙.</h2>
+  
+  <p>Coin-based shop for the FireMC Minecraft server. Earn coins, buy bundles, kits, ranks and weapons.</p>
+  <div class="ip">❤️ LifestealServer ❤️</div>
+</div>
+
+<div class="search">
+  <form method="get" action="{{ url_for('index') }}">
+    <input type="text" name="q" value="{{ search }}" placeholder="Search items..." />
+    {% if active_cat != 'recommended' %}<input type="hidden" name="cat" value="{{ active_cat }}" />{% endif %}
+  </form>
+</div>
+
+<div class="cats">
+  <a href="{{ url_for('index') }}" class="{% if active_cat=='recommended' %}active{% endif %}">Recommended</a>
+  {% for c in categories %}
+    <a href="{{ url_for('index', cat=c) }}" class="{% if active_cat==c %}active{% endif %}">{{ c|capitalize }}</a>
+  {% endfor %}
+</div>
+
+<div class="grid">
+  {% for it in items %}
+  <div class="card">
+    <div class="img">
+      {% if it['badge'] %}<span class="badge">{{ it['badge'] }}</span>{% endif %}
+      {% if it['image_url'] %}<img src="{{ it['image_url'] }}" alt="{{ it['name'] }}" />{% else %}<span style="color:var(--muted)">No image</span>{% endif %}
+    </div>
+    <div class="body">
+      <h3>{{ it['name'] }}</h3>
+      <p>{{ it['description'] }}</p>
+      <div class="row">
+        <span class="price">🪙 {{ it['price'] }}</span>
+        <a href="{{ url_for('buy', item_id=it['id']) }}" class="btn">Buy</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+    <p style="color:var(--muted)">No items found.</p>
+  {% endfor %}
+</div>
+{% endblock %}
