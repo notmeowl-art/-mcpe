@@ -1,9 +1,11 @@
-"""FireMC Shop — Flask + SQLite port of the original React/Supabase app.
+"""FireMC Shop — Flask + SQLite (optimized).
 
-Run:
-    pip install flask
+Run (dev):
+    pip install -r requirements.txt
     python app.py
-Then open http://localhost:5000
+
+Run (prod):
+    gunicorn -w 2 -b 0.0.0.0:8000 'app:app'
 
 The first user that registers becomes the admin automatically.
 """
@@ -11,11 +13,11 @@ import os
 import sqlite3
 import secrets
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from flask import (
     Flask, g, request, redirect, url_for, render_template,
-    session, flash, abort, jsonify,
+    session, flash, abort, jsonify, send_from_directory,
 )
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -24,14 +26,21 @@ SERVER_IP = "Play.firemc.fun"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-prod-" + secrets.token_hex(8))
+# Cache static files in the browser for 7 days -> much less laggy
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 7 * 24 * 3600
+app.config["TEMPLATES_AUTO_RELOAD"] = False
+app.config["JSON_SORT_KEYS"] = False
 
 
 # ---------- DB ----------
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(DB_PATH, timeout=10, check_same_thread=False)
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys=ON")
+        g.db.execute("PRAGMA journal_mode=WAL")
+        g.db.execute("PRAGMA synchronous=NORMAL")
+        g.db.execute("PRAGMA temp_store=MEMORY")
     return g.db
 
 
@@ -45,6 +54,7 @@ def close_db(_exc):
 def init_db():
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
+    db.execute("PRAGMA journal_mode=WAL")
     db.executescript(
         """
         CREATE TABLE IF NOT EXISTS users (
@@ -52,9 +62,10 @@ def init_db():
           email TEXT NOT NULL UNIQUE,
           password_hash TEXT NOT NULL,
           coins INTEGER NOT NULL DEFAULT 100,
-          role TEXT NOT NULL DEFAULT 'user',  -- admin | moderator | user
+          role TEXT NOT NULL DEFAULT 'user',
           created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
+        CREATE INDEX IF NOT EXISTS idx_users_coins ON users(coins DESC);
 
         CREATE TABLE IF NOT EXISTS items (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,6 +77,7 @@ def init_db():
           badge TEXT,
           created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
+        CREATE INDEX IF NOT EXISTS idx_items_cat ON items(category, price);
 
         CREATE TABLE IF NOT EXISTS orders (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,11 +85,13 @@ def init_db():
           item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
           item_name TEXT NOT NULL,
           price INTEGER NOT NULL,
-          status TEXT NOT NULL DEFAULT 'pending',  -- pending|confirmed|cancelled
+          status TEXT NOT NULL DEFAULT 'pending',
           minecraft_username TEXT,
           contact TEXT,
           created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
+        CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC);
 
         CREATE TABLE IF NOT EXISTS earn_links (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,12 +111,11 @@ def init_db():
           completed_at TEXT,
           coins_awarded INTEGER
         );
+        CREATE INDEX IF NOT EXISTS idx_clicks_user ON earn_clicks(user_id);
         """
     )
 
-    # Seed items if empty
-    cur = db.execute("SELECT COUNT(*) AS c FROM items")
-    if cur.fetchone()["c"] == 0:
+    if db.execute("SELECT COUNT(*) AS c FROM items").fetchone()["c"] == 0:
         seed = [
             ("VIP Rank", "VIP tag, /fly in lobby, 5 /sethome, colored chat", "ranks", 50, "/static/img/item-rank.png", "Starter"),
             ("MVP Rank", "MVP tag, /fly anywhere, 10 /sethome, daily crate key", "ranks", 150, "/static/img/item-rank.png", "Popular"),
@@ -119,8 +132,7 @@ def init_db():
             seed,
         )
 
-    cur = db.execute("SELECT COUNT(*) AS c FROM earn_links")
-    if cur.fetchone()["c"] == 0:
+    if db.execute("SELECT COUNT(*) AS c FROM earn_links").fetchone()["c"] == 0:
         db.executemany(
             "INSERT INTO earn_links(title,url,coins,wait_seconds) VALUES (?,?,?,?)",
             [
@@ -131,6 +143,10 @@ def init_db():
 
     db.commit()
     db.close()
+
+
+# Initialise DB at import time so it works under gunicorn / any WSGI server.
+init_db()
 
 
 # ---------- Auth helpers ----------
@@ -184,6 +200,37 @@ def admin_required(fn):
     return w
 
 
+# ---------- Error handlers ----------
+@app.errorhandler(404)
+def not_found(_e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(403)
+def forbidden(_e):
+    return render_template("404.html"), 403
+
+
+@app.errorhandler(500)
+def server_error(_e):
+    return render_template("500.html"), 500
+
+
+@app.route("/favicon.ico")
+def favicon():
+    # Reuse hero image as favicon to avoid 404 spam in logs
+    return send_from_directory(
+        os.path.join(APP_DIR, "static", "img"),
+        "item-sword.png",
+        mimetype="image/png",
+    )
+
+
+@app.route("/healthz")
+def healthz():
+    return {"ok": True}
+
+
 # ---------- Routes ----------
 @app.route("/")
 def index():
@@ -231,14 +278,18 @@ def auth():
                 return redirect(url_for("auth"))
             flash("Account created. Please sign in.", "success")
             return redirect(url_for("auth"))
-        else:  # login
+        else:
             row = db.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
             if not row or not verify_password(password, row["password_hash"]):
                 flash("Invalid credentials.", "error")
                 return redirect(url_for("auth"))
+            session.permanent = True
             session["uid"] = row["id"]
             return redirect(request.args.get("next") or url_for("index"))
     return render_template("auth.html")
+
+
+app.permanent_session_lifetime = timedelta(days=30)
 
 
 @app.route("/logout")
@@ -468,6 +519,14 @@ def admin_link_delete(link_id):
     return redirect(url_for("admin"))
 
 
+# ---- Static cache headers (faster repeat loads) ----
+@app.after_request
+def add_cache_headers(resp):
+    if request.path.startswith("/static/"):
+        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    return resp
+
+
 if __name__ == "__main__":
-    init_db()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Dev only. In production use: gunicorn -w 2 -b 0.0.0.0:8000 'app:app'
+    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)

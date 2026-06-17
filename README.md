@@ -1,44 +1,25 @@
-# FireMC Shop — Python / Flask
+# FireMC Shop — Flask (optimized)
 
-A Flask + SQLite port of the FireMC coin shop. Fully self-contained: no external services, no API keys.
+## Fixes vs original
+- DB now initialises at import (works under gunicorn, no more 404s on first run)
+- Proper 404 / 403 / 500 error pages (no more raw "Not Found")
+- Favicon route (kills favicon 404 spam)
+- SQLite WAL mode + indexes -> faster, no lock-ups
+- 7-day static cache headers + lazy-loaded images -> snappier UI
+- Removed duplicate hidden field in admin item form
+- `threaded=True` dev server, 30-day persistent login session
+- `/healthz` endpoint for uptime monitors
 
-## Features
-- Coin-based shop (ranks, kits, weapons)
-- Email + password auth (first sign-up = admin)
-- Buy flow with Minecraft username + contact
-- Orders dashboard (users see own; admins see all & confirm/cancel)
-- Earn coins: wait-timer link tasks
-- Leaderboard (top 20)
-- Admin panel: manage items, give coins, change roles, manage earn links
-
-## Run
-
+## Run (dev)
 ```bash
-pip install flask
+pip install -r requirements.txt
 python app.py
 ```
+Open http://localhost:5000 — first signup becomes admin.
 
-Open <http://localhost:5000>.
-
-The first account you register becomes the **admin**. Use a different email
-for normal players.
-
-## Files
-
-```
-app.py              Flask app + SQLite schema + all routes
-templates/          Jinja2 templates
-static/style.css    Dark theme styling
-static/img/         Item images (rank, kit, sword, bow, armor, hero)
-firemc.db           Created automatically on first run
-```
-
-## Deploy
-
-Any host that runs Python works (Render, Railway, Fly, a VPS). For
-production set `SECRET_KEY` env var and run behind gunicorn:
-
+## Run (production)
 ```bash
-pip install gunicorn
+pip install -r requirements.txt
+export SECRET_KEY="$(python -c 'import secrets;print(secrets.token_hex(32))')"
 gunicorn -w 2 -b 0.0.0.0:8000 'app:app'
 ```
